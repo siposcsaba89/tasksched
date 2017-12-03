@@ -7,6 +7,7 @@
 #include <cassert>
 #include <queue>
 #include <map>
+#include <condition_variable>
 
 struct iomanager
 {
@@ -63,6 +64,6 @@ private:
     std::mutex m_sched_mutex;
     std::map<int32_t, bool> m_task_executed;
     std::map<int32_t, bool> m_task_scheduled;
-
+    std::condition_variable m_run_workers;
 };
 
