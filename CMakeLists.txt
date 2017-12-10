@@ -43,6 +43,10 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
+if (UNIX)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
+endif()
+
 if (BUILD_EXAMPLES)
     add_executable(basics examples/basic.cpp)
     set_target_properties(basics PROPERTIES DEBUG_POSTFIX _d)
