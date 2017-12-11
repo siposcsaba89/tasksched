@@ -4,7 +4,7 @@
 
 
 
-class SampleTask : public task
+class SampleTask : public tsch::task
 {
 public:
     SampleTask(const std::string & name, int sleep_time) { m_name = name; m_sleep_time = sleep_time; }
@@ -18,12 +18,31 @@ public:
 };
 
 
-int32_t threadsched::s_task_id = 0;
+struct StringDataHolder : public tsch::DataHolder
+{
+    StringDataHolder(size_t h_size)
+    {
+        for (size_t i = 0; i < h_size; ++i)
+            holder.push_back(std::to_string(i));
+    }
+    std::string & getElement(size_t idx)
+    {
+        return holder[idx];
+    }
+    std::vector<std::string> holder;
 
+    virtual ~StringDataHolder() {}
+};
 
 
 int main()
 {
+    StringDataHolder strholder(10);
+    tsch::iomanager iomgr;
+    size_t strholder_idx = iomgr.addDataHolder("stringholder" ,strholder);
+
+    std::string & str = iomgr.getDataWritable<StringDataHolder, std::string>(strholder_idx, size_t(1));
+
     SampleTask T1("T1", 10), T2("T2", 10), T3("T3", 20), T4("T4", 30), T5("T5", 35), T6("T6", 3), T7("T7", 90), T8("T8", 16), T9("T9", 25), T10("T10", 1), T11("T11", 46), T12("T12", 101), T13("T13", 32), T14("T14", 32);
     T1.set_priority(10);
     T2.set_priority(10);
@@ -40,7 +59,7 @@ int main()
     T13.set_priority(32);
     T14.set_priority(32);
 
-    threadsched sched(6);
+    tsch::threadsched sched(6);
     sched.add_task(&T1);
     sched.add_task(&T2);
     sched.add_task(&T3);
