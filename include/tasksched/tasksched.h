@@ -13,6 +13,7 @@ namespace tsch
 {
     struct DataHolder
     {
+        virtual void swapBuffers() = 0;
         virtual ~DataHolder() {}
     };
 
@@ -43,7 +44,9 @@ namespace tsch
         template<typename HolderType, typename RetDataType>
         const RetDataType & getData(const std::string & stream_name, size_t data_idx) const
         {
-            return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx);
+            auto  it = data_holders_indices.find(stream_name);
+            assert(it != data_holders_indices.end());
+            return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx);
         }
 
         size_t addDataHolder(const std::string & name, DataHolder & dh)
@@ -54,13 +57,21 @@ namespace tsch
             return curr_num;
         }
 
+        void swapBuffers()
+        {
+            for (auto & dh : data_holders)
+                dh->swapBuffers();
+        }
+
     };
 
     class task
     {
     public:
         virtual void execute() = 0;
-        virtual void set_iomanager(iomanager * manager) { m_manager = manager; }
+        virtual void set_iomanager(iomanager * manager) { m_io_manager = manager; }
+        virtual void set_name(const std::string & name) { m_name = name; }
+        const std::string & get_name() const { return m_name; }
         void set_priority(int32_t priority) { m_priority = priority; }
         int32_t priority() { return m_priority; }
     private:
@@ -68,16 +79,17 @@ namespace tsch
         void set_task_id(int32_t t_id) { m_task_id = t_id; }
         int32_t task_id() { assert(m_task_id != -1); return m_task_id; };
     protected:
-        iomanager * m_manager = nullptr;
+        iomanager * m_io_manager = nullptr;
         int32_t m_task_id = -1;
         int32_t m_priority = -1;
+        std::string m_name;
     };
 
 
     class threadsched
     {
     public:
-        threadsched(int32_t num_threads);
+        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);
         void start();
         void finish();
         void add_task(task * t);
@@ -107,6 +119,8 @@ namespace tsch
         std::map<int32_t, bool> m_task_executed;
         std::map<int32_t, bool> m_task_scheduled;
         std::condition_variable m_run_workers;
+        
+        std::function<void(void)> m_all_task_executed_callback;
     };
 
 }

@@ -27,10 +27,17 @@ struct StringDataHolder : public tsch::DataHolder
     }
     std::string & getElement(size_t idx)
     {
-        return holder[idx];
+        size_t s = holder.size();
+        return holder[(idx + s - m_idx_counter) % s];
     }
     std::vector<std::string> holder;
 
+
+    void swapBuffers()
+    {
+        m_idx_counter = (m_idx_counter + 1) % holder.size();
+    }
+    size_t m_idx_counter = 0;
     virtual ~StringDataHolder() {}
 };
 
@@ -38,6 +45,13 @@ struct StringDataHolder : public tsch::DataHolder
 int main()
 {
     StringDataHolder strholder(10);
+
+    for (int i = 0; i < 25; ++i)
+    {
+        std::cout << strholder.getElement(1) << std::endl;
+        strholder.swapBuffers();
+    }
+
     tsch::iomanager iomgr;
     size_t strholder_idx = iomgr.addDataHolder("stringholder" ,strholder);
 
@@ -59,7 +73,7 @@ int main()
     T13.set_priority(32);
     T14.set_priority(32);
 
-    tsch::threadsched sched(6);
+    tsch::threadsched sched(6, []() {printf("All task executed, starting again!"); });
     sched.add_task(&T1);
     sched.add_task(&T2);
     sched.add_task(&T3);

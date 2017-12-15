@@ -14,8 +14,9 @@ namespace tsch
 
     int32_t threadsched::s_task_id = 0;
 
-    threadsched::threadsched(int32_t num_threads)
+    threadsched::threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback)
     {
+        m_all_task_executed_callback = all_task_executed_callback;
         m_workers.resize(num_threads);
     }
 
@@ -44,6 +45,7 @@ namespace tsch
                 {
                     m_deps_ready[to_execute->task_id()].resize(0);
                     to_execute->execute();
+                    printf("Task executed: %s \n", to_execute->get_name().c_str());
                     update_queue(to_execute);
 
                 }
@@ -91,6 +93,7 @@ namespace tsch
         {
             std::cout << "Reschedule \n" << std::endl;
             clear_task_executed();
+            m_all_task_executed_callback();
         }
 
 
