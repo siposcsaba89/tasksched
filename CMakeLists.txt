@@ -11,10 +11,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(PUBLIC_HDRS
     include/tasksched/tasksched.h
+    include/tasksched/timeline_creator.h
 )
 
 set(SRCS 
     src/tasksched.cpp
+    src/timeline_creator.cpp
 )
 
 add_library(${PROJECT_NAME} ${PUBLIC_HDRS} ${SRCS})

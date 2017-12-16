@@ -1,4 +1,5 @@
 #include "tasksched/tasksched.h"
+#include "tasksched/timeline_creator.h"
 #include <string>
 #include <iostream>
 
@@ -13,7 +14,6 @@ public:
         std::cout << m_name << ": " << m_task_id << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(m_sleep_time));
     }
-    std::string m_name;
     int m_sleep_time;
 };
 
@@ -72,7 +72,6 @@ int main()
     T12.set_priority(101);
     T13.set_priority(32);
     T14.set_priority(32);
-
     tsch::threadsched sched(6, []() {printf("All task executed, starting again!"); });
     sched.add_task(&T1);
     sched.add_task(&T2);
@@ -114,6 +113,6 @@ int main()
     }
     sched.finish();
     std::cout << "Lealltam" << std::endl;
-
+    tsch::createTimelineHTML("timeline.html", "Tasksched example timeline", sched.get_start_time(), sched.getTimlineData());
     return 0;
 }

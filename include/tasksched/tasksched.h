@@ -8,6 +8,8 @@
 #include <queue>
 #include <map>
 #include <condition_variable>
+#include <list>
+#include <tasksched/timeline_creator.h>
 
 namespace tsch
 {
@@ -95,6 +97,8 @@ namespace tsch
         void add_task(task * t);
         void add_dependency(task *t1, task* t2);
         void add_dependency_by_id(int32_t t1_id, int32_t t2_id);
+        std::chrono::time_point<std::chrono::steady_clock> get_start_time() const;
+        const std::map<std::string, std::list<TimePointData>> & getTimlineData() const;
     private:
         void update_queue(task * finsihed_task);
         void clear_task_executed();
@@ -121,6 +125,9 @@ namespace tsch
         std::condition_variable m_run_workers;
         
         std::function<void(void)> m_all_task_executed_callback;
+
+        std::map<std::string, std::list<TimePointData>> m_timestamps;
+        std::chrono::time_point<std::chrono::steady_clock> m_start_time;
     };
 
 }

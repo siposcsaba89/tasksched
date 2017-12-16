@@ -22,9 +22,10 @@ namespace tsch
 
     void threadsched::start()
     {
+        m_start_time = std::chrono::high_resolution_clock::now();
         clear_task_executed();
         update_queue(nullptr);
-        auto a = [&]()
+        auto a = [&](int th_id)
         {
             while (!m_stop_execution)
             {
@@ -44,7 +45,13 @@ namespace tsch
                 if (to_execute != nullptr)
                 {
                     m_deps_ready[to_execute->task_id()].resize(0);
+                    
+                    TimePointData t;
+                    t.start = std::chrono::high_resolution_clock::now();
                     to_execute->execute();
+                    t.end = std::chrono::high_resolution_clock::now();
+                    t.group = std::to_string(th_id);
+                    m_timestamps[to_execute->get_name()].emplace_back(t);
                     printf("Task executed: %s \n", to_execute->get_name().c_str());
                     update_queue(to_execute);
 
@@ -52,9 +59,11 @@ namespace tsch
             }
         };
 
+        int th_id = 0;
         for (auto & th : m_workers)
         {
-            th = std::thread(a);
+            th = std::thread(a, th_id);
+            ++th_id;
         }
     }
 
@@ -81,6 +90,16 @@ namespace tsch
     {
         m_forward_deps[t1_id].push_back(t2_id);
         m_backward_deps[t2_id].push_back(t1_id);
+    }
+
+    std::chrono::time_point<std::chrono::steady_clock> threadsched::get_start_time() const
+    {
+        return m_start_time;
+    }
+
+    const std::map<std::string, std::list<TimePointData>>& threadsched::getTimlineData() const
+    {
+        return m_timestamps;
     }
 
     void threadsched::update_queue(task * finshed_task)
