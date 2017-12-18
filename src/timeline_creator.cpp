@@ -60,6 +60,7 @@ void tsch::createTimelineHTML(const std::string & f_name,
         double avg_duration = 0;
     };
     std::map<std::string, TimeStat> time_stats;
+    std::map<std::string, int> groupe_id_count;
     for (auto & d : data)
     {
         TimeStat stat;
@@ -77,6 +78,7 @@ void tsch::createTimelineHTML(const std::string & f_name,
             tlf << "                ['" + dd.group + "', '" + d.first + "', new Date(" + std::to_string(start.count()) + "), new Date(" + std::to_string(end.count()) + ")], \n";
             if (max < end.count())
                 max = end.count();
+            ++groupe_id_count[dd.group];
         }
         stat.avg_duration /= d.second.size();
         time_stats[d.first] = std::move(stat);
@@ -87,7 +89,7 @@ void tsch::createTimelineHTML(const std::string & f_name,
     tlf <<
         "        var options = {\n"
         "            width: " + std::to_string(max * scale) + ",\n"
-        "            height: " + std::to_string(data.size() * 22) + "\n"
+        "            height: " + std::to_string(groupe_id_count.size() * 50) + "\n"
         "        };\n"
 
         "        chart.draw(dataTable, options);\n"

@@ -22,7 +22,7 @@ namespace tsch
 
     void threadsched::start()
     {
-        m_start_time = std::chrono::high_resolution_clock::now();
+        m_start_time = std::chrono::steady_clock::now();
         clear_task_executed();
         update_queue(nullptr);
         auto a = [&](int th_id)
@@ -47,9 +47,9 @@ namespace tsch
                     m_deps_ready[to_execute->task_id()].resize(0);
                     
                     TimePointData t;
-                    t.start = std::chrono::high_resolution_clock::now();
+                    t.start = std::chrono::steady_clock::now();
                     to_execute->execute();
-                    t.end = std::chrono::high_resolution_clock::now();
+                    t.end = std::chrono::steady_clock::now();
                     t.group = std::to_string(th_id);
                     m_timestamps[to_execute->get_name()].emplace_back(t);
                     printf("Task executed: %s \n", to_execute->get_name().c_str());
