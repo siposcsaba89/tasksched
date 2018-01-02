@@ -25,7 +25,7 @@ struct StringDataHolder : public tsch::DataHolder
         for (size_t i = 0; i < h_size; ++i)
             holder.push_back(std::to_string(i));
     }
-    std::string & getElement(size_t idx)
+    std::string & getElement(size_t idx, size_t device_idx)
     {
         size_t s = holder.size();
         return holder[(idx + s - m_idx_counter) % s];
@@ -48,14 +48,14 @@ int main()
 
     for (int i = 0; i < 25; ++i)
     {
-        std::cout << strholder.getElement(1) << std::endl;
+        std::cout << strholder.getElement(1, 0) << std::endl;
         strholder.swapBuffers();
     }
 
     tsch::iomanager iomgr;
     size_t strholder_idx = iomgr.addDataHolder("stringholder" ,strholder);
 
-    std::string & str = iomgr.getDataWritable<StringDataHolder, std::string>(strholder_idx, size_t(1));
+    std::string & str = iomgr.getDataWritable<StringDataHolder, std::string>(strholder_idx, size_t(1), size_t(0));
 
     SampleTask T1("T1", 10), T2("T2", 10), T3("T3", 20), T4("T4", 30), T5("T5", 35), T6("T6", 3), T7("T7", 90), T8("T8", 16), T9("T9", 25), T10("T10", 1), T11("T11", 46), T12("T12", 101), T13("T13", 32), T14("T14", 32);
     T1.set_priority(10);

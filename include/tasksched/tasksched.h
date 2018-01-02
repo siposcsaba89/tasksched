@@ -26,29 +26,29 @@ namespace tsch
         std::map<std::string, size_t> data_holders_indices;
 
         template<typename HolderType, typename RetDataType>
-        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx) 
+        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)
         {
-            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx);
+            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
         
         template<typename HolderType, typename RetDataType>
-        RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx)
+        RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
         {
-            return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx);
+            return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx, device_idx);
         }
 
         template<typename HolderType, typename RetDataType>
-        const RetDataType & getData(size_t stream_idx, size_t data_idx) const
+        const RetDataType & getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
         {
-            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx);
+            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
 
         template<typename HolderType, typename RetDataType>
-        const RetDataType & getData(const std::string & stream_name, size_t data_idx) const
+        const RetDataType & getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
         {
             auto  it = data_holders_indices.find(stream_name);
             assert(it != data_holders_indices.end());
-            return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx);
+            return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx, device_idx);
         }
 
         size_t addDataHolder(const std::string & name, DataHolder & dh)
