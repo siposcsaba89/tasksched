@@ -52,7 +52,7 @@ namespace tsch
                     t.end = std::chrono::steady_clock::now();
                     t.group = std::to_string(th_id);
                     m_timestamps[to_execute->get_name()].emplace_back(t);
-                    printf("Task executed: %s \n", to_execute->get_name().c_str());
+                    //printf("Task executed: %s \n", to_execute->get_name().c_str());
                     update_queue(to_execute);
 
                 }
@@ -110,7 +110,7 @@ namespace tsch
 
         if (all_task_executed())
         {
-            std::cout << "Reschedule \n" << std::endl;
+            //std::cout << "Reschedule \n" << std::endl;
             clear_task_executed();
             m_all_task_executed_callback();
         }
@@ -156,9 +156,9 @@ namespace tsch
         }
         static auto start = std::chrono::steady_clock::now();
         auto end = std::chrono::steady_clock::now();
-        std::cout << "Elapsed time in milliseconds : "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-            << " ms" << std::endl;
+        //std::cout << "Elapsed time in milliseconds : "
+        //   << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+        //    << " ms" << std::endl;
         start = end;
 
     }
