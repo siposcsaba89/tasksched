@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <list>
 #include <tasksched/timeline_creator.h>
+#include <functional>
 
 namespace tsch
 {
