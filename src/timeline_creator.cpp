@@ -71,8 +71,15 @@ void tsch::createTimelineHTML(const std::string & f_name,
     for (auto & d : data)
     {
         TimeStat stat;
-        for (auto & dd : d.second)
+        auto it = d.second.begin();
+        if (d.second.size() > 50)
+            std::advance(it, 50);
+        else
+            continue;
+
+        for (; it != d.second.end(); ++it)
         {
+            auto & dd = *it;
             std::chrono::milliseconds start = std::chrono::duration_cast<std::chrono::milliseconds>( dd.start - start_time);
             std::chrono::milliseconds end = std::chrono::duration_cast<std::chrono::milliseconds>(dd.end - start_time);
             int64_t dur = (end - start).count();
@@ -87,7 +94,7 @@ void tsch::createTimelineHTML(const std::string & f_name,
                 max = end.count();
             ++groupe_id_count[dd.group];
         }
-        stat.avg_duration /= d.second.size();
+        stat.avg_duration /= (d.second.size() - 50);
         time_stats[d.first] = std::move(stat);
     }
 
