@@ -2,14 +2,21 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <iomanip> // put_time
 
 void tsch::createTimelineHTML(const std::string & f_name,
     const std::string & header,
     std::chrono::time_point<std::chrono::steady_clock> start_time,
     const std::map<std::string, std::list<tsch::TimePointData>> & data)
 {
-    std::ofstream tlf(std::to_string( std::chrono::duration_cast<std::chrono::seconds>(start_time.time_since_epoch()).count()) + "_" + f_name);
+
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
+    
+    std::ofstream tlf(ss.str() + "_" + f_name);
     if (!tlf.is_open())
         return;
     tlf <<
