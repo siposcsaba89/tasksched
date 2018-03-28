@@ -20,7 +20,9 @@ namespace tsch
         virtual ~DataHolder() {}
     };
 
-
+    /**
+    * Manages input/output data queaues between tasks
+    */
     struct iomanager
     {
         std::vector<DataHolder*> data_holders;
@@ -68,6 +70,9 @@ namespace tsch
 
     };
 
+    /**
+    * General task interface
+    */
     class task
     {
     public:
@@ -88,7 +93,9 @@ namespace tsch
         std::string m_name;
     };
 
-
+    /**
+    * Task scheduler
+    */
     class threadsched
     {
     public:
