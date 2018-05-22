@@ -12,13 +12,15 @@
 #include <tasksched/timeline_creator.h>
 #include <functional>
 
-/*! \brief Manages scheduling tasks between application thread pools?
+/*! \brief Manages scheduling tasks between application thread pools
  */
 namespace tsch
 {
+    /*! Implements common interface between data holders
+     */
     struct DataHolder
     {
-        virtual void swapBuffers() = 0;
+        virtual void swapBuffers() = 0;                                         /*!< Manages data buffers in time */
         virtual ~DataHolder() {}
     };
 
@@ -26,28 +28,28 @@ namespace tsch
      */
     struct iomanager
     {
-        std::vector<DataHolder*> data_holders;                                                                                  /*!< Data holder what? */
-        std::map<std::string, size_t> data_holders_indices;                                                                     /*!< Map data holder indices? */
+        std::vector<DataHolder*> data_holders;                                  /*!< Data buffer */                                                                           
+        std::map<std::string, size_t> data_holders_indices;                     /*!< Indexed map for data buffer */                                                                     
 
-        template<typename HolderType, typename RetDataType>                                                                     /*!< Template file for what? */.
-        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)                                    /*!< Retrieves writable data and their types, including stream index, data, and device index*/
+        template<typename HolderType, typename RetDataType>                                                                     
+        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)                                    /*!< Retrieves writable data for stream index, data index, and device index*/
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
         
-        template<typename HolderType, typename RetDataType>                                                                     /*!< */
+        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves writable data for stream name, data index, and device index */
         RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
         {
             return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>                                                                     /*!< */
+        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves readable data for stream index, data index, and device index */
         const RetDataType & getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>                                                                     /*!< */
+        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves readable data for stream name, data index, and device index */
         const RetDataType & getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
         {
             auto  it = data_holders_indices.find(stream_name);
@@ -55,15 +57,15 @@ namespace tsch
             return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx, device_idx);
         }
 
-        size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         /*!< */
+        size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         /*!< Adds new data to data holder */
         {
-            size_t curr_num = data_holders.size();                                                                              /*!< Current size of data holders? */
+            size_t curr_num = data_holders.size();                                                                              
             data_holders.push_back(&dh);
             data_holders_indices[name] = curr_num;
             return curr_num;
         }
 
-        void swapBuffers()
+        void swapBuffers()                                                                                                      /*!< Implements managing data buffers in time */
         {
             for (auto & dh : data_holders)
                 dh->swapBuffers();
@@ -78,10 +80,10 @@ namespace tsch
     public:
         virtual void execute() = 0;
         virtual void set_iomanager(iomanager * manager) { m_io_manager = manager; }                                             /*!< Sets IO manager */
-        virtual void set_name(const std::string & name) { m_name = name; }                                                      /*!< Sets IO manager name? */
-        const std::string & get_name() const { return m_name; }
-        void set_priority(int32_t priority) { m_priority = priority; }
-        int32_t priority() { return m_priority; }
+        virtual void set_name(const std::string & name) { m_name = name; }                                                      /*!< Sets IO manager name */
+        const std::string & get_name() const { return m_name; }                                                                 /*!< Sets task name */
+        void set_priority(int32_t priority) { m_priority = priority; }                                                          /*!< Sets task priority */
+        int32_t priority() { return m_priority; }                                                                               /*!< Returns task priority */
     private:
         friend class threadsched;
         void set_task_id(int32_t t_id) { m_task_id = t_id; }
@@ -98,14 +100,14 @@ namespace tsch
     class threadsched
     {
     public:
-        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);                             /*!< Number of threads? */
-        void start();                                                                                                       /*!< Starts task? */
-        void finish();                                                                                                      /*!< Finishes task? */
-        void add_task(task * t);                                                                                            /*!< Adds tasks by index? */
-        void add_dependency(task *t1, task* t2);                                                                            /*!< Creates dependencies between tasks by their index? */
-        void add_dependency_by_id(int32_t t1_id, int32_t t2_id);                                                            /*!< Creates dependencies between tasks by their ID? */
-        std::chrono::time_point<std::chrono::steady_clock> get_start_time() const;                                          /*!< Returns start time of task? */
-        const std::map<std::string, std::list<TimePointData>> & getTimlineData() const;                                     /*!< Map data related to the time point? */
+        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);                             /*!< Number of threads */
+        void start();                                                                                                       /*!< Starts scheduler */
+        void finish();                                                                                                      /*!< Finishes scheduler */
+        void add_task(task * t);                                                                                            /*!< Adds tasks to scheduler */
+        void add_dependency(task *t1, task* t2);                                                                            /*!< Defines dependencies between tasks (t2 must wait until t1 executed) */
+        void add_dependency_by_id(int32_t t1_id, int32_t t2_id);                                                            /*!< Defines dependencies between tasks by their ID */
+        std::chrono::time_point<std::chrono::steady_clock> get_start_time() const;                                          /*!< Returns start time of the scheduler */
+        const std::map<std::string, std::list<TimePointData>> & getTimlineData() const;                                     /*!< Returns start and end time of all executed tasks */
     private:
         void update_queue(task * finsihed_task);
         void clear_task_executed();
