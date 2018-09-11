@@ -20,44 +20,45 @@ namespace tsch
      */
     struct DataHolder
     {
-        virtual void swapBuffers() = 0;                                         /*!< Manages data buffers in time */
+        virtual void swapBuffers() = 0;                                         /*!< Thread safe function to swap data buffers, drops the oldest package and loads the newer one into the queue*/
         virtual ~DataHolder() {}
     };
 
-    /*! Manages input/output data queues between tasks
+    /*! Manages input/output data queues between tasks. Every task has 0 or more input and 0 or more output DataHolder. DataHolders can store 1 or more consecutive frame data.
      */
     struct iomanager
     {
         std::vector<DataHolder*> data_holders;                                  /*!< Data buffer */                                                                           
         std::map<std::string, size_t> data_holders_indices;                     /*!< Indexed map for data buffer */                                                                     
 
-        template<typename HolderType, typename RetDataType>                                                                     
-        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)                                    /*!< Retrieves writable data for stream index, data index, and device index*/
+        template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves writable data for stream index, data index, and device index*/
+        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)                                    
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
         
-        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves writable data for stream name, data index, and device index */
+        template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves writable data for stream name, data index, and device index */
         RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
         {
             return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves readable data for stream index, data index, and device index */
+        template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves readable data for stream index, data index, and device index */
         const RetDataType & getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>                                                                     /*!< Retrieves readable data for stream name, data index, and device index */
+        template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves readable data for stream name, data index, and device index */
         const RetDataType & getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
         {
             auto  it = data_holders_indices.find(stream_name);
             assert(it != data_holders_indices.end());
             return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx, device_idx);
         }
-
-        size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         /*!< Adds new data to data holder */
+        
+        /*! Adds new data to data holder */
+        size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         
         {
             size_t curr_num = data_holders.size();                                                                              
             data_holders.push_back(&dh);
@@ -65,7 +66,7 @@ namespace tsch
             return curr_num;
         }
 
-        void swapBuffers()                                                                                                      /*!< Implements managing data buffers in time */
+        void swapBuffers()
         {
             for (auto & dh : data_holders)
                 dh->swapBuffers();
@@ -100,7 +101,7 @@ namespace tsch
     class threadsched
     {
     public:
-        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);                             /*!< Number of threads */
+        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);
         void start();                                                                                                       /*!< Starts scheduler */
         void finish();                                                                                                      /*!< Finishes scheduler */
         void add_task(task * t);                                                                                            /*!< Adds tasks to scheduler */
@@ -118,7 +119,6 @@ namespace tsch
         std::map<int32_t, std::vector<int32_t>> m_deps_ready;
         std::map<int32_t, std::vector<int32_t> > m_forward_deps;
         std::map<int32_t, std::vector<int32_t> > m_backward_deps;
-        //std::
         static int32_t s_task_id;
         std::mutex m_task_queue_mutex;
         struct compare_tasks
