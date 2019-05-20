@@ -50,7 +50,7 @@ namespace tsch
                     to_execute->execute();
                     t.end = std::chrono::steady_clock::now();
                     t.group = std::to_string(th_id);
-                    m_timestamps[to_execute->get_name()].emplace_back(t);
+                    m_timestamps[to_execute->get_name()].push_back(t);
                     //printf("Task executed: %s \n", to_execute->get_name().c_str());
                     update_queue(to_execute);
 
@@ -76,6 +76,7 @@ namespace tsch
 
     void threadsched::add_task(task * t)
     {
+        assert(t);
         t->set_task_id(s_task_id++);
         m_tasks.push_back(t);
     }
