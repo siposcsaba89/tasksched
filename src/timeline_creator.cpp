@@ -4,7 +4,8 @@
 #include <sstream>
 #include <iomanip> // put_time
 
-void tsch::createTimelineHTML(const std::string & f_name,
+void tsch::createTimelineHTML(const std::string & p_name,
+    const std::string & f_name,
     const std::string & header,
     std::chrono::time_point<std::chrono::steady_clock> start_time,
     const std::map<std::string, std::list<tsch::TimePointData>> & data)
@@ -16,7 +17,7 @@ void tsch::createTimelineHTML(const std::string & f_name,
     std::stringstream ss;
     ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
     
-    std::ofstream tlf(ss.str() + "_" + f_name);
+    std::ofstream tlf(p_name + ss.str() + "_" + f_name);
     if (!tlf.is_open())
         return;
     tlf <<

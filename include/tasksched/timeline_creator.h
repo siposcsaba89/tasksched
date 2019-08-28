@@ -13,7 +13,7 @@ namespace tsch
         std::chrono::time_point<std::chrono::steady_clock> end;
     };
 
-    void createTimelineHTML(const std::string & f_name, const std::string & header,
+    void createTimelineHTML(const std::string & p_name, const std::string & f_name, const std::string & header,
         std::chrono::time_point<std::chrono::steady_clock> start_time,
         const std::map<std::string, std::list<tsch::TimePointData>> & data);
 }
