@@ -113,6 +113,6 @@ int main()
     }
     sched.finish();
     std::cout << "Lealltam" << std::endl;
-    tsch::createTimelineHTML("timeline.html", "Tasksched example timeline", sched.get_start_time(), sched.getTimlineData());
+    tsch::createTimelineHTML("./", "timeline.html", "Tasksched example timeline", sched.get_start_time(), sched.getTimlineData());
     return 0;
 }
