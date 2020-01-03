@@ -101,7 +101,7 @@ namespace tsch
     class threadsched
     {
     public:
-        threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback);
+        threadsched(int32_t num_threads, std::function<bool(void)> all_task_executed_callback);
         void start();                                                                                                       /*!< Starts scheduler */
         void finish();                                                                                                      /*!< Finishes scheduler */
         void add_task(task * t);                                                                                            /*!< Adds tasks to scheduler */
@@ -133,7 +133,7 @@ namespace tsch
         std::map<int32_t, bool> m_task_scheduled;
         std::condition_variable m_run_workers;
         
-        std::function<void(void)> m_all_task_executed_callback;
+        std::function<bool(void)> m_all_task_executed_callback;
 
         std::map<std::string, std::list<TimePointData>> m_timestamps;
         std::chrono::time_point<std::chrono::steady_clock> m_start_time;

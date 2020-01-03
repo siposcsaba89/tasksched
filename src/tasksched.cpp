@@ -1,4 +1,5 @@
 #include "tasksched/tasksched.h"
+#include <aimotive/log/log.hpp>
 #include <inttypes.h>
 #include <mutex>
 #include <memory>
@@ -13,7 +14,7 @@ namespace tsch
 
     int32_t threadsched::s_task_id = 0;
 
-    threadsched::threadsched(int32_t num_threads, std::function<void(void)> all_task_executed_callback)
+    threadsched::threadsched(int32_t num_threads, std::function<bool(void)> all_task_executed_callback)
     {
         m_all_task_executed_callback = all_task_executed_callback;
         m_workers.resize(num_threads);
@@ -64,14 +65,19 @@ namespace tsch
             th = std::thread(a, th_id);
             ++th_id;
         }
+
+        LOG_INFO() << "EVENT: parking started";
+
+        for (auto& w : m_workers)
+        {
+            if (w.joinable())
+                w.join();
+        }
     }
 
     void threadsched::finish()
     {
-        m_stop_execution = true;
-        for (auto & w : m_workers)
-            if (w.joinable())
-                w.join();
+
     }
 
     void threadsched::add_task(task * t)
@@ -112,7 +118,9 @@ namespace tsch
         {
             //std::cout << "Reschedule \n" << std::endl;
             clear_task_executed();
-            m_all_task_executed_callback();
+            if (false == m_all_task_executed_callback()) {
+                m_stop_execution = true;
+            }
         }
 
 

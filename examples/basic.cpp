@@ -72,7 +72,7 @@ int main()
     T12.set_priority(101);
     T13.set_priority(32);
     T14.set_priority(32);
-    tsch::threadsched sched(6, []() {printf("All task executed, starting again!"); });
+    tsch::threadsched sched(6, []() {printf("All task executed, starting again!"); return true; });
     sched.add_task(&T1);
     sched.add_task(&T2);
     sched.add_task(&T3);
