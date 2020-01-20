@@ -74,6 +74,29 @@ namespace tsch
 
     };
 
+    struct InOutDesc
+    {
+        std::vector<int32_t> gpu_idx;
+        std::string stream_name;
+        size_t element_idx;
+
+        template <typename T>
+        const typename T::DataType& get(const tsch::iomanager& iomanager) const
+        {
+            return iomanager.getData<T, typename T::DataType>(stream_name,
+                element_idx, gpu_idx.size() > 0 ? gpu_idx[0] : 0);
+        }
+
+        template <typename T>
+        typename T::DataType& getWritable(tsch::iomanager& iomanager, int32_t gpu_ind = -1)
+        {
+            int32_t gpu_i = (gpu_ind < 0 ? 0 : gpu_idx[gpu_ind]);
+            return iomanager.getDataWritable<T,
+                typename T::DataType>(stream_name,
+                    element_idx, gpu_i);
+        }
+    };
+
     /*! General task interface
      */
     class task
@@ -139,4 +162,31 @@ namespace tsch
         std::chrono::time_point<std::chrono::steady_clock> m_start_time;
     };
 
+
+
+    template<typename ModuleType>
+    class ParkingModule_TASK : public tsch::task
+    {
+    public:
+        ParkingModule_TASK(const std::vector<InOutDesc>& input_descriptor,                   /*!< Initializes input descriptor */
+            const std::vector<InOutDesc>& output_descriptors,                          /*!< Initializes output descriptor*/
+            tsch::iomanager& iomanager,
+            std::unique_ptr<ModuleType>&& m)
+            : m_module(std::move(m))
+            , m_output_descriptor(output_descriptors)
+            , m_input_descriptor(input_descriptor)
+        {
+            set_iomanager(&iomanager);
+        }
+
+        ModuleType& getParkingModule() const {
+            return *m_module;
+        }
+
+    protected:
+        std::vector<InOutDesc> m_input_descriptor; //the order is very important
+        std::vector<InOutDesc> m_output_descriptor; //the order is very important
+    private:
+        std::unique_ptr<ModuleType> m_module;
+    };
 }
