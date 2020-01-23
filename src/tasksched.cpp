@@ -80,11 +80,11 @@ namespace tsch
 
     }
 
-    void threadsched::add_task(task * t)
+    void threadsched::add_task(std::unique_ptr<task>&& t)
     {
         assert(t);
         t->set_task_id(s_task_id++);
-        m_tasks.push_back(t);
+        m_tasks.push_back(std::move(t));
     }
 
     void threadsched::add_dependency(task * t1, task * t2)
@@ -147,7 +147,7 @@ namespace tsch
                     {
                         std::lock_guard<std::mutex> lock(m_task_queue_mutex);
                         m_task_scheduled[t->task_id()] = true;
-                        m_task_queue.push(t);
+                        m_task_queue.push(t.get());
                     }
                     m_run_workers.notify_all();
                 }

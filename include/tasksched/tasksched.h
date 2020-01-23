@@ -32,29 +32,33 @@ namespace tsch
         std::map<std::string, size_t> data_holders_indices;                     /*!< Indexed map for data buffer */                                                                     
 
         template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves writable data for stream index, data index, and device index*/
-        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)                                    
+        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx)                                    
         {
-            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
+            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx);
         }
         
         template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves writable data for stream name, data index, and device index */
-        RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
+        RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx)
         {
-            return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx, device_idx);
+            return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx);
         }
 
         template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves readable data for stream index, data index, and device index */
-        const RetDataType & getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
+        const RetDataType & getData(size_t stream_idx, size_t data_idx) const
         {
-            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
+            return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx);
         }
 
         template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves readable data for stream name, data index, and device index */
-        const RetDataType & getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
+        const RetDataType & getData(const std::string & stream_name, size_t data_idx) const
         {
             auto  it = data_holders_indices.find(stream_name);
             assert(it != data_holders_indices.end());
-            return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx, device_idx);
+            return dynamic_cast<HolderType&>(*data_holders[it->second]).getElement(data_idx);
+        }
+
+        bool hasData(const std::string& stream_name) const {
+            return data_holders_indices.find(stream_name) != data_holders_indices.end();
         }
         
         /*! Adds new data to data holder */
@@ -76,24 +80,19 @@ namespace tsch
 
     struct InOutDesc
     {
-        std::vector<int32_t> gpu_idx;
         std::string stream_name;
         size_t element_idx;
 
         template <typename T>
         const typename T::DataType& get(const tsch::iomanager& iomanager) const
         {
-            return iomanager.getData<T, typename T::DataType>(stream_name,
-                element_idx, gpu_idx.size() > 0 ? gpu_idx[0] : 0);
+            return iomanager.getData<T, typename T::DataType>(stream_name, element_idx);
         }
 
         template <typename T>
-        typename T::DataType& getWritable(tsch::iomanager& iomanager, int32_t gpu_ind = -1)
+        typename T::DataType& getWritable(tsch::iomanager& iomanager)
         {
-            int32_t gpu_i = (gpu_ind < 0 ? 0 : gpu_idx[gpu_ind]);
-            return iomanager.getDataWritable<T,
-                typename T::DataType>(stream_name,
-                    element_idx, gpu_i);
+            return iomanager.getDataWritable<T, typename T::DataType>(stream_name, element_idx);
         }
     };
 
@@ -127,7 +126,7 @@ namespace tsch
         threadsched(int32_t num_threads, std::function<bool(void)> all_task_executed_callback);
         void start();                                                                                                       /*!< Starts scheduler */
         void finish();                                                                                                      /*!< Finishes scheduler */
-        void add_task(task * t);                                                                                            /*!< Adds tasks to scheduler */
+        void add_task(std::unique_ptr<task>&& t);                                                                                            /*!< Adds tasks to scheduler */
         void add_dependency(task *t1, task* t2);                                                                            /*!< Defines dependencies between tasks (t2 must wait until t1 executed) */
         void add_dependency_by_id(int32_t t1_id, int32_t t2_id);                                                            /*!< Defines dependencies between tasks by their ID */
         std::chrono::time_point<std::chrono::steady_clock> get_start_time() const;                                          /*!< Returns start time of the scheduler */
@@ -138,7 +137,7 @@ namespace tsch
         bool all_task_executed() const;
     private:
         std::vector<std::thread> m_workers;
-        std::vector<task *> m_tasks;
+        std::vector<std::unique_ptr<task>> m_tasks;
         std::map<int32_t, std::vector<int32_t>> m_deps_ready;
         std::map<int32_t, std::vector<int32_t> > m_forward_deps;
         std::map<int32_t, std::vector<int32_t> > m_backward_deps;
@@ -171,8 +170,8 @@ namespace tsch
         ParkingModule_TASK(const std::vector<InOutDesc>& input_descriptor,                   /*!< Initializes input descriptor */
             const std::vector<InOutDesc>& output_descriptors,                          /*!< Initializes output descriptor*/
             tsch::iomanager& iomanager,
-            std::unique_ptr<ModuleType>&& m)
-            : m_module(std::move(m))
+            ModuleType* m)
+            : m_module(m)
             , m_output_descriptor(output_descriptors)
             , m_input_descriptor(input_descriptor)
         {
@@ -187,6 +186,6 @@ namespace tsch
         std::vector<InOutDesc> m_input_descriptor; //the order is very important
         std::vector<InOutDesc> m_output_descriptor; //the order is very important
     private:
-        std::unique_ptr<ModuleType> m_module;
+        ModuleType* const m_module;
     };
 }
