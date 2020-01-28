@@ -28,7 +28,7 @@ namespace tsch
      */
     struct iomanager
     {
-        std::vector<DataHolder*> data_holders;                                  /*!< Data buffer */                                                                           
+        std::vector<std::unique_ptr<DataHolder>> data_holders;                                  /*!< Data buffer */                                                                           
         std::map<std::string, size_t> data_holders_indices;                     /*!< Indexed map for data buffer */                                                                     
 
         template<typename HolderType, typename RetDataType>                                                                     /*! Retrieves writable data for stream index, data index, and device index*/
@@ -62,10 +62,19 @@ namespace tsch
         }
         
         /*! Adds new data to data holder */
-        size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         
+        /*size_t addDataHolder(const std::string & name, DataHolder & dh)                                                         
         {
             size_t curr_num = data_holders.size();                                                                              
             data_holders.push_back(&dh);
+            data_holders_indices[name] = curr_num;
+            return curr_num;
+        }*/
+
+        /*! Adds new data to data holder */
+        size_t addDataHolder(const std::string& name, std::unique_ptr<DataHolder>&& dh)
+        {
+            size_t curr_num = data_holders.size();
+            data_holders.push_back(std::move(dh));
             data_holders_indices[name] = curr_num;
             return curr_num;
         }

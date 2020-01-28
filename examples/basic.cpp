@@ -44,16 +44,16 @@ struct StringDataHolder : public tsch::DataHolder
 
 int main()
 {
-    StringDataHolder strholder(10);
+    auto strholder = std::make_unique<StringDataHolder>(10);
 
     for (int i = 0; i < 25; ++i)
     {
-        std::cout << strholder.getElement(1) << std::endl;
-        strholder.swapBuffers();
+        std::cout << strholder->getElement(1) << std::endl;
+        strholder->swapBuffers();
     }
 
     tsch::iomanager iomgr;
-    size_t strholder_idx = iomgr.addDataHolder("stringholder" ,strholder);
+    size_t strholder_idx = iomgr.addDataHolder("stringholder" , std::move(strholder));
 
     std::string & str = iomgr.getDataWritable<StringDataHolder, std::string>(strholder_idx, size_t(1));
 
