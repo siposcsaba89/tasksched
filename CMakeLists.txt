@@ -7,7 +7,12 @@ option(BUILD_EXAMPLES "Build tasksched examples" ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+include(aim_targets RESULT_VARIABLE res)
+if(NOT res)
+    message(FATAL_ERROR "Probably, missing set the appropriate module path. Current CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+endif()
 
+aim_find_package(aimcore REQUIRED aimlog)
 
 set(PUBLIC_HDRS
     include/tasksched/tasksched.h
