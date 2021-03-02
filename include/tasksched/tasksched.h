@@ -26,26 +26,26 @@ namespace tsch
         std::vector<DataHolder*> data_holders;
         std::map<std::string, size_t> data_holders_indices;
 
-        template<typename HolderType, typename RetDataType>
-        RetDataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)
+        template<typename HolderType>
+        typename HolderType::DataType & getDataWritable(size_t stream_idx, size_t data_idx, size_t device_idx)
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
         
-        template<typename HolderType, typename RetDataType>
-        RetDataType & getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
+        template<typename HolderType>
+        typename HolderType::DataType& getDataWritable(const std::string & stream_name, size_t data_idx, size_t device_idx)
         {
             return dynamic_cast<HolderType&>(*data_holders[data_holders_indices[stream_name]]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>
-        const RetDataType & getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
+        template<typename HolderType>
+        const typename HolderType::DataType& getData(size_t stream_idx, size_t data_idx, size_t device_idx) const
         {
             return dynamic_cast<HolderType&>(*data_holders[stream_idx]).getElement(data_idx, device_idx);
         }
 
-        template<typename HolderType, typename RetDataType>
-        const RetDataType & getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
+        template<typename HolderType>
+        const typename HolderType::DataType& getData(const std::string & stream_name, size_t data_idx, size_t device_idx) const
         {
             auto  it = data_holders_indices.find(stream_name);
             assert(it != data_holders_indices.end());
@@ -58,6 +58,16 @@ namespace tsch
             data_holders.push_back(&dh);
             data_holders_indices[name] = curr_num;
             return curr_num;
+        }
+
+        size_t dataHolderIndex(const std::string& stream_name)
+        {
+            auto  it = data_holders_indices.find(stream_name);
+            assert(it != data_holders_indices.end());
+            if (it != data_holders_indices.end())
+                return it->second;
+            else
+                return std::numeric_limits<size_t>::max();
         }
 
         void swapBuffers()
