@@ -20,6 +20,7 @@ public:
 
 struct StringDataHolder : public tsch::DataHolder
 {
+    typedef std::string DataType;
     StringDataHolder(size_t h_size)
     {
         for (size_t i = 0; i < h_size; ++i)
@@ -55,7 +56,7 @@ int main()
     tsch::iomanager iomgr;
     size_t strholder_idx = iomgr.addDataHolder("stringholder" ,strholder);
 
-    std::string & str = iomgr.getDataWritable<StringDataHolder, std::string>(strholder_idx, size_t(1), size_t(0));
+    std::string & str = iomgr.getDataWritable<StringDataHolder>(strholder_idx, size_t(1), size_t(0));
 
     SampleTask T1("T1", 10), T2("T2", 10), T3("T3", 20), T4("T4", 30), T5("T5", 35), T6("T6", 3), T7("T7", 90), T8("T8", 16), T9("T9", 25), T10("T10", 1), T11("T11", 46), T12("T12", 101), T13("T13", 32), T14("T14", 32);
     T1.set_priority(10);
